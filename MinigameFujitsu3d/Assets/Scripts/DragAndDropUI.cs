@@ -17,6 +17,7 @@ public class DragAndDropUI : MonoBehaviour, IPointerDownHandler/*, IBeginDragHan
     [SerializeField] private Canvas mainCanvas;
     public bool slashedIngredient;
     public int ingredientID;
+    public float decreaseSizeSpeed = 1f;
 
 
 
@@ -122,6 +123,13 @@ public class DragAndDropUI : MonoBehaviour, IPointerDownHandler/*, IBeginDragHan
                     ninjaGameManager.DestroySlashedIngredient(this.transform.position);
                 }
 
+            }
+            else
+            {
+                //if (slashedIngredient)
+                //{
+                //    rectTransform.localScale *= decreaseSizeSpeed;
+                //}
             }
         }
         
