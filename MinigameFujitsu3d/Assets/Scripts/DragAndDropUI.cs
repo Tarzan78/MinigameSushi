@@ -8,6 +8,7 @@ public class DragAndDropUI : MonoBehaviour, IPointerDownHandler/*, IBeginDragHan
     //Variables 
     private bool inDebug = true;
     bool isInsideCanvas;
+    public bool isIndicator = false;
     private RectTransform rectTransform;
     public Vector3 direction;
     public Vector3 rotation = new Vector3(0,0,0);
@@ -15,6 +16,8 @@ public class DragAndDropUI : MonoBehaviour, IPointerDownHandler/*, IBeginDragHan
     public bool slashable = false;
     [SerializeField] private Canvas mainCanvas;
     public bool slashedIngredient;
+    public int ingredientID;
+
 
 
     private void Awake()
@@ -55,59 +58,72 @@ public class DragAndDropUI : MonoBehaviour, IPointerDownHandler/*, IBeginDragHan
     //This method detect when ur mouse is clicking in the obj
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (inDebug)
+        if (isIndicator)
         {
-            Debug.Log("On pointer down ");
-        }
-
-        if (slashable)
-        {
-
-            if (!slashedIngredient)
-            {
-                //houston we may have a problem, this method is called twice per update so is trying to destroy obj that don't exist, now we will use some true or false variable, and will check it every time.
-                ninjaGameManager.DestroyIngredientByClick(this.transform);
-                ninjaGameManager.ScoreUP();
-            }
-            //else
-            //{
-            //    ninjaGameManager.DestroySlashedIngredient(this.transform.position);
-            //}
+            //nothing
         }
         else
         {
-            ninjaGameManager.ScoreDown();
+            if (inDebug)
+            {
+                Debug.Log("On pointer down ");
+            }
+
+            if (slashable)
+            {
+
+                if (!slashedIngredient)
+                {
+                    //houston we may have a problem, this method is called twice per update so is trying to destroy obj that don't exist, now we will use some true or false variable, and will check it every time.
+                    ninjaGameManager.DestroyIngredientByClick(this.transform);
+                    ninjaGameManager.ScoreUP();
+                }
+                //else
+                //{
+                //    ninjaGameManager.DestroySlashedIngredient(this.transform.position);
+                //}
+            }
+            else
+            {
+                ninjaGameManager.ScoreDown();
+            }
         }
-
-
     }
 
     private void Update()
     {
-        rectTransform.anchoredPosition += (Vector2)direction * Time.deltaTime;
-
-        rectTransform.eulerAngles += rotation * Time.deltaTime;
-
-        //isInsideCanvas = ninjaGameManager.VerifyIfIsInPanel(this.transform.position);
-        isInsideCanvas = ninjaGameManager.VerifyIfIsInPanel(this.transform.position, ninjaGameManager.panelCornersMarginOfError);
-
-        if (!isInsideCanvas)
+        if (isIndicator)
         {
-            if (!slashedIngredient)
-            {
-                //GameObject.Destroy(this);
-                ninjaGameManager.DestroyIngredient(this.transform);
-            }
-            else
-            {
-                if (inDebug)
-                {
-                    Debug.Log("Destroy slashed ingredient ");
-                }
-        
-                ninjaGameManager.DestroySlashedIngredient(this.transform.position);
-            }
-            
+            //nothing
         }
+        else
+        {
+            rectTransform.anchoredPosition += (Vector2)direction * Time.deltaTime;
+
+            rectTransform.eulerAngles += rotation * Time.deltaTime;
+
+            //isInsideCanvas = ninjaGameManager.VerifyIfIsInPanel(this.transform.position);
+            isInsideCanvas = ninjaGameManager.VerifyIfIsInPanel(this.transform.position, ninjaGameManager.panelCornersMarginOfError);
+
+            if (!isInsideCanvas)
+            {
+                if (!slashedIngredient)
+                {
+                    //GameObject.Destroy(this);
+                    ninjaGameManager.DestroyIngredient(this.transform);
+                }
+                else
+                {
+                    if (inDebug)
+                    {
+                        Debug.Log("Destroy slashed ingredient ");
+                    }
+
+                    ninjaGameManager.DestroySlashedIngredient(this.transform.position);
+                }
+
+            }
+        }
+        
     }
 }

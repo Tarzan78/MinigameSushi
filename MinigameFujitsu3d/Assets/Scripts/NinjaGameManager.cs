@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UIElements;
 
 public class NinjaGameManager : MonoBehaviour
 {
@@ -20,21 +22,27 @@ public class NinjaGameManager : MonoBehaviour
     //}
 
     //Variables 
-    private bool inDebug = true;
+    private bool inDebug = false;
     private bool testingCorners = false;
     private bool testingCornersMarginOfError = false;
+    private bool testingSOBJ = true;
     [SerializeField] GameObject ingredientSalmonUI;
     [SerializeField] GameObject ingredientWasabiUI;
+    [SerializeField] GameObject goodIngredientIndicator_PosUI;
+    GameObject goddIngredientIndicator;
     [SerializeField] List<GameObject> ingredientsPrefab;
+    [SerializeField] List<GameObject> slashedIngredientsPrefabs = new List<GameObject>();
+    private List<GameObject> activeIngredients = new List<GameObject>();
+    private List<GameObject> slashedIngredients = new List<GameObject>();
     private RectTransform rectTransform;
     public Vector3[] panelCorners = new Vector3[4];
     public Vector3[] panelCornersMarginOfError = new Vector3[4];
-    private List<GameObject> activeIngredients = new List<GameObject>();
-    private List<GameObject> slashedIngredients = new List<GameObject>();
-    [SerializeField] List<GameObject> slashedIngredientsPrefabs = new List<GameObject>();
     private float speed = 150f;
     public float marginOfError; //0.5f is the center
     private int score = 0;
+    [SerializeField] private TMP_Text scoreTM;
+    [SerializeField] private IngredientPackList ingredientPackList;
+    (List<int> badIngredientsID, List<int> goodIngredientsID) ingredientsListIDs = (new List<int>(), new List<int>());
 
 
 
@@ -46,6 +54,24 @@ public class NinjaGameManager : MonoBehaviour
         panelCornersMarginOfError = GetAllPanelCornersMarginOfError(rectTransform);
         //SpawnnIngredients();
         SpawnIngredientsManager();
+
+        //UI
+        UpdateScore();
+
+        //S OBJ
+        if (testingSOBJ)
+        {
+            ScripOBJTTest();
+        }
+
+        ingredientsListIDs = SetIngredientsIDList(ingredientPackList);
+
+        goddIngredientIndicator = Instantiate(
+            ingredientPackList.ingredientPackList[ingredientsListIDs.goodIngredientsID[0]].ingredientPrefab,
+            goodIngredientIndicator_PosUI.transform.position,
+            Quaternion.identity, this.transform);
+
+        goddIngredientIndicator.GetComponent<DragAndDropUI>().isIndicator = true;
     }
 
     // Update is called once per frame
@@ -86,28 +112,74 @@ public class NinjaGameManager : MonoBehaviour
         (Vector3 spawnPoint, Vector3 direction) spawnInfo;
         GameObject tempOBJ;
         bool slashable;
+        int randomValue;
+        int tempIndex; //deverá ser index ou um ID ?
+        int indexIngredientsPackList;
+        int probabilityFromGoodID = 50;
+        int tempID = -1;
 
         spawnInfo = RandomSpawnAndDirectionInPanel(panelCornersMarginOfError);
 
-        if (Random.Range(0,2) % 2 == 0)
+        randomValue = Random.RandomRange(0, 100);
+
+        if (randomValue >= probabilityFromGoodID)
         {
-            tempOBJ = ingredientSalmonUI;
+            //get the index from list
+            tempIndex = Random.RandomRange(0, ingredientsListIDs.goodIngredientsID.Count);
+
+            //get OBJ
+           // tempOBJ = ingredientPackList.ingredientPackList[tempIndex].ingredientPrefab;
+
+
+            ////tem uma confusão aqui dos index para ID
+            
+            //get the id from the list
+            tempID = ingredientsListIDs.goodIngredientsID[tempIndex];
+
             slashable = true;
         }
         else
         {
-            tempOBJ = ingredientWasabiUI;
+            //get the index from list
+            tempIndex = Random.RandomRange(0, ingredientsListIDs.badIngredientsID.Count);
+
+            //get the id from the list
+            tempID = ingredientsListIDs.badIngredientsID[tempIndex];
+
             slashable = false;
         }
-        
+
+        indexIngredientsPackList = GetIndexFromIngredientListByID(tempID);
+
+        tempOBJ = ingredientPackList.ingredientPackList[indexIngredientsPackList].ingredientPrefab;
+
+        //if (Random.Range(0,2) % 2 == 0)
+        //{
+        //    tempOBJ = ingredientSalmonUI;
+        //    slashable = true;
+        //}
+        //else
+        //{
+        //    tempOBJ = ingredientWasabiUI;
+        //    slashable = false;
+        //}
+
         Debug.Log("Spawning ");
         GameObject spawnObj = Instantiate(tempOBJ, spawnInfo.spawnPoint, Quaternion.identity, this.transform);
         spawnObj.GetComponent<DragAndDropUI>().direction = spawnInfo.direction * speed;
         spawnObj.GetComponent<DragAndDropUI>().ninjaGameManager = this;
         spawnObj.GetComponent<DragAndDropUI>().slashable = slashable;
+        spawnObj.GetComponent<DragAndDropUI>().ingredientID = ingredientPackList.ingredientPackList[indexIngredientsPackList].iD;
 
         activeIngredients.Add(spawnObj);
 
+        if (testingSOBJ)
+        {
+            Debug.Log("ID -> " + ingredientPackList.ingredientPackList[indexIngredientsPackList].iD);
+            Debug.Log("Slashable -> " + slashable);
+            Debug.Log("Random to Good or Bad -> " + randomValue);
+
+        }
 
         if (testingCorners)
         {
@@ -132,20 +204,24 @@ public class NinjaGameManager : MonoBehaviour
         (Vector3 spawnPoint, Vector3 direction) spawnInfo;
         Vector3 rotation = new Vector3(0,0,0);
         GameObject tempOBJ;
+        int tempIndex;
 
-        //(GameObject leftSide, GameObject rightSide) slashedIngredient = GetSlashedIngredient(ingredientSlashed);
+        //get index using ID
+        tempIndex = GetIndexFromIngredientListByID(ingredientSlashed.GetComponent<DragAndDropUI>().ingredientID);
 
         for (int i = 0; i < 2; i++)
         {
             if (i == 0)
             {
-                tempOBJ = slashedIngredientsPrefabs[0];
+                //get the left side
+                tempOBJ = ingredientPackList.ingredientPackList[tempIndex].ingredientLeftSide;
                 spawnInfo.direction = new Vector3(-0.1f, -1, 0);
                 rotation = new Vector3(0, 0, 0.1f);
             }
             else
             {
-                tempOBJ = slashedIngredientsPrefabs[1];
+                //get the rigth side
+                tempOBJ = ingredientPackList.ingredientPackList[tempIndex].ingredientRightSide;
                 spawnInfo.direction = new Vector3(0.1f, -1, 0);
                 rotation = new Vector3(0, 0, -0.1f);
             }
@@ -586,8 +662,9 @@ public class NinjaGameManager : MonoBehaviour
         score++;
 
         Debug.Log("Score -> " + score);
-    }
 
+        UpdateScore();
+    }
 
     public void ScoreDown()
     {
@@ -595,6 +672,79 @@ public class NinjaGameManager : MonoBehaviour
         score--;
 
         Debug.Log("Score -> " + score);
+
+        UpdateScore();
     }
 
+    private void UpdateScore()
+    {
+        scoreTM.text = score.ToString();
+    }
+
+    private void ScripOBJTTest()
+    {
+        Debug.Log("Testing ScriOBJ");
+
+        foreach (var item in ingredientPackList.ingredientPackList)
+        {
+            Debug.Log("id -> " + item.iD);
+        }
+    }
+
+    //the ingredients that will up the points 
+    private (List<int> badIngredientsID, List<int> goodIngredientsID) SetIngredientsIDList(IngredientPackList ingredientPackList)
+    {
+        (List<int> badIngredientsID, List<int> goodIngredientsID) ingredientsList = (new List<int>(), new List<int>());
+        //List<int> badIngredientsIDs = new List<int>();
+        int tempGoodIndex = 0;
+        int goodID = 0;
+
+        //pick one to be the good ingredient and the others will be bad ingredients 
+        tempGoodIndex = Random.RandomRange(0, ingredientPackList.ingredientPackList.Count);
+        goodID = ingredientPackList.ingredientPackList[tempGoodIndex].iD;
+
+        ingredientsList.goodIngredientsID.Add(goodID);
+
+        foreach (var item in ingredientPackList.ingredientPackList)
+        {
+            if (item.iD != goodID)
+            {
+                ingredientsList.badIngredientsID.Add(item.iD);
+            }
+        }
+
+        if (testingSOBJ)
+        {
+            Debug.Log("Good IDs count -> " + ingredientsList.goodIngredientsID.Count);
+
+            foreach (var item in ingredientsList.goodIngredientsID)
+            {
+                Debug.Log("IDs -> " + item);
+            }
+
+            Debug.Log("Bad IDs count -> " + ingredientsList.badIngredientsID.Count);
+
+            foreach (var item in ingredientsList.badIngredientsID)
+            {
+                Debug.Log("IDs -> " + item);
+            }
+        }
+
+        return ingredientsList;
+    }
+
+    public int GetIndexFromIngredientListByID(int iD)
+    {
+        int returnID = -1;
+
+        for (int i = 0; i < ingredientPackList.ingredientPackList.Count; i++)
+        {
+            if (ingredientPackList.ingredientPackList[i].iD == iD)
+            {
+                returnID = i;
+            }
+        }
+
+        return returnID;
+    }
 }
