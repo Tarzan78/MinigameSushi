@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 882dd25cb712f0346baba65a3fd6f675, type: 3}
   m_Name: Salmon
   m_EditorClassIdentifier: 
-  ingredientPrefab: {fileID: 0}
-  ingredientLeftSide: {fileID: 0}
-  ingredientRightSide: {fileID: 0}
+  ingredientPrefab: {fileID: 7777763512551442340, guid: c9c2f081aa62da34cbc53d6768743668, type: 3}
+  ingredientLeftSide: {fileID: 8614834163051056027, guid: 9dd2a8dfc84c0f64cb44cb283da90761, type: 3}
+  ingredientRightSide: {fileID: 7514066987028181233, guid: 6a835560ab989074c98bf21852d4a57f, type: 3}
   iD: 0

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 882dd25cb712f0346baba65a3fd6f675, type: 3}
   m_Name: Wasabi
   m_EditorClassIdentifier: 
-  ingredientPrefab: {fileID: 0}
-  ingredientLeftSide: {fileID: 0}
-  ingredientRightSide: {fileID: 0}
-  iD: 0
+  ingredientPrefab: {fileID: 1040266515878594499, guid: 399b56601f0f9154c8a72e956bfcb3c7, type: 3}
+  ingredientLeftSide: {fileID: 932375562336378689, guid: 080bba7bd07e2694ebf01315612697ee, type: 3}
+  ingredientRightSide: {fileID: 4883778787509446668, guid: 755ed05145e884a499c4e2cfbd6f7fd3, type: 3}
+  iD: 1
